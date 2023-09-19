@@ -1,8 +1,6 @@
 import math
 import random
 
-# 3rd party dependencies
-import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
@@ -60,8 +58,11 @@ class RRT():
     
     def _add_node_to_tree(self, sample: tuple, nearest_neighbour: tuple) -> tuple:
 
-        x_diff = (sample[0] - nearest_neighbour[0])/self.step_size_mm
-        y_diff = (sample[1] - nearest_neighbour[1])/self.step_size_mm
+        distance = math.dist(sample, nearest_neighbour)
+        scale_factor = distance/self.step_size_mm
+
+        x_diff = (sample[0] - nearest_neighbour[0])/scale_factor
+        y_diff = (sample[1] - nearest_neighbour[1])/scale_factor
 
         new_node_x = nearest_neighbour[0] + x_diff
         new_node_y = nearest_neighbour[1] + y_diff
@@ -86,6 +87,7 @@ class RRT():
             self.tree.append(self.goal)
             self._connect_to_parent(new_node, self.goal)
             self._success = True
+            print("Found path to goal!")
 
 
 start1 = (10.0, 10.0)
