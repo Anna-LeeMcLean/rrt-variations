@@ -38,7 +38,10 @@ class RRT():
             new_node = self._add_node_to_tree(new_sample, nearest_neighbour)
             plt.plot(new_node.x, new_node.y, "bo", linewidth=0.5)
             self._connect_to_parent(new_node)
-            self._check_if_at_goal(new_node)
+            at_goal = self._check_if_at_goal(new_node)
+
+            if at_goal:
+                self._return_path()
     
     def _sample_space(self) -> Node:
         sample_x = random.uniform(0, self.workspace_length_mm)
@@ -84,7 +87,7 @@ class RRT():
         y = [new_node.parent.y, new_node.y]
         plt.plot(x, y, 'gray', linestyle='--')
     
-    def _check_if_at_goal(self, new_node: Node) -> None:
+    def _check_if_at_goal(self, new_node: Node) -> bool:
         # TODO: can make the process faster if you don't do this after every sample created. 
         # Maybe after every 5 samples? Maybe a function of the size of the workspace.
 
@@ -96,6 +99,24 @@ class RRT():
             self._connect_to_parent(self.goal)
             self._success = True
             print("Found path to goal!")
+
+            return True
+        
+        return False
+    
+    def _return_path(self):
+
+        current_node = self.goal
+        path = [current_node]
+
+        while current_node.parent != None:
+            path.append(current_node.parent)
+            current_node = current_node.parent
+
+        path_x = [node.x for node in path]
+        path_y = [node.y for node in path]
+
+        plt.plot(path_x, path_y, 'yellow')
 
 
 start1 = Node(x=10.0, y=10.0)
