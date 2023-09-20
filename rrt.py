@@ -45,6 +45,7 @@ class RRT():
 
             if at_goal:
                 self._return_path()
+                print(f"Overall cost to goal: {self.goal.cost:.2f}!")
     
     def _sample_space(self) -> Node:
         sample_x = random.uniform(0, self.workspace_length_mm)
@@ -81,6 +82,7 @@ class RRT():
         self.tree.append(new_node)
         new_node.parent = nearest_neighbour
         nearest_neighbour.child = new_node
+        new_node.cost = nearest_neighbour.cost + new_node.euclidean_dist(nearest_neighbour)
 
         return new_node
     
@@ -99,6 +101,7 @@ class RRT():
             self.tree.append(self.goal)
             self.goal.parent = new_node
             new_node.child = self.goal
+            self.goal.cost = new_node.cost + self.goal.euclidean_dist(new_node)
             self._connect_to_parent(self.goal)
             self._success = True
             print("Found path to goal!")
