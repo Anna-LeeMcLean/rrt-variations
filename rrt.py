@@ -67,6 +67,16 @@ class RRT():
 
         return nearest_neighbour
     
+    def _update_node_attributes(self, node: Node, parent_node: Node):
+        '''
+        Sets 'node' parent to 'parent_node' and 'parent_node' child to 'node
+        Updates cost of node.
+        '''
+        node.parent = parent_node
+        parent_node.child = node
+        node.cost = parent_node.cost + node.euclidean_dist(parent_node)
+
+    
     def _add_node_to_tree(self, sample: Node, nearest_neighbour: Node) -> Node:
 
         distance = sample.euclidean_dist(nearest_neighbour)
@@ -80,9 +90,7 @@ class RRT():
 
         new_node = Node(x=new_node_x, y=new_node_y)
         self.tree.append(new_node)
-        new_node.parent = nearest_neighbour
-        nearest_neighbour.child = new_node
-        new_node.cost = nearest_neighbour.cost + new_node.euclidean_dist(nearest_neighbour)
+        self._update_node_attributes(new_node, nearest_neighbour)
 
         return new_node
     
@@ -99,9 +107,7 @@ class RRT():
         if self.goal.euclidean_dist(new_node) <= self.step_size_mm:
             # add goal node to tree
             self.tree.append(self.goal)
-            self.goal.parent = new_node
-            new_node.child = self.goal
-            self.goal.cost = new_node.cost + self.goal.euclidean_dist(new_node)
+            self._update_node_attributes(self.goal, new_node)
             self._connect_to_parent(self.goal)
             self._success = True
             print("Found path to goal!")
