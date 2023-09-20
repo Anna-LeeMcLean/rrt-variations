@@ -11,6 +11,7 @@ class RRT():
     start: Node
     goal: Node
     tree: list[Node] = []
+    path_to_goal: list[Node] = []
     step_size_mm: float
     goal_range: float
     workspace_length_mm : int = 500
@@ -22,8 +23,10 @@ class RRT():
         self.goal = goal
         self.step_size_mm = step_size_mm
 
-        # add start point to tree
+        # add start node to tree
         self.tree.append(self.start)
+        # add goal node to the path returned
+        self.path_to_goal.append(self.goal)
         plt.figure()
 
         # visulize start and end nodes
@@ -107,14 +110,13 @@ class RRT():
     def _return_path(self):
 
         current_node = self.goal
-        path = [current_node]
 
         while current_node.parent != None:
-            path.append(current_node.parent)
+            self.path_to_goal.append(current_node.parent)
             current_node = current_node.parent
 
-        path_x = [node.x for node in path]
-        path_y = [node.y for node in path]
+        path_x = [node.x for node in self.path_to_goal]
+        path_y = [node.y for node in self.path_to_goal]
 
         plt.plot(path_x, path_y, 'yellow')
 
