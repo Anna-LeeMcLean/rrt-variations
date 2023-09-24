@@ -8,6 +8,9 @@ class Node():
         self.parent = parent
         self.child = child
         self.cost = 0.0
+    
+    def __repr__(self) -> str:
+        return f"x: {self.x}, y: {self.y}"
 
     def euclidean_dist(self, other_node) -> float:
         node_tuple = (self.x, self.y)
