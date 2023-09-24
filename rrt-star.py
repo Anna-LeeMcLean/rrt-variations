@@ -22,7 +22,10 @@ class RRTStar(RRT):
         1. create a random sample in the workspace that is close to a node in the path
               - choose random node in the path and add random x,y values to the node's coords. 
                 random value will be +/- step_size
-        2. get self.neighbours closest neighbours
+
+        Let self.neighbours = n
+
+        2. get n closest neighbours
         3. for each neighbour, if the cost to the neighbour's parent is less through the 
            random sample than it currently is, rewire the path. 
         4. rewire the path
@@ -36,31 +39,36 @@ class RRTStar(RRT):
         number_of_nodes_to_add = len(self.path_to_goal) * 100
         count = 0
 
+        path = self.path_to_goal[1:-1]      # remove start and goal nodes from path
+
         while count != number_of_nodes_to_add:
             # Step 1: create a random sample in the workspace that is close to a node in the path
-            node = random.choice(self.path_to_goal[1:-1])       # choose a random node in the path excluding the start and goal nodes
+            node = random.choice(path)       # choose a random node in the path (excluding the start and goal nodes)
 
             random_x = random.uniform(-self.step_size_mm, self.step_size_mm)
             random_y = random.uniform(-self.step_size_mm, self.step_size_mm)
 
             random_node = Node(x=node.x + random_x, y=node.y + random_y)
 
-            # Step 2: get self.neighbours closest neighbours to the random node
+            # Step 2: get n closest neighbours to the random node
 
-            # Initialize a list which will hold the smallest distances between the random sample and neighbour nodes
+            # Initialize a list which will hold the n smallest distances between the random sample and neighbour nodes
             distances = [math.inf for _ in range(self.neighbours)]   
             # Initalize a list which will hold the nearest neighbours   
-            nodes = [None for _ in range(self.neighbours)]              # holds 
+            nodes = [None for _ in range(self.neighbours)]
 
-            for n in self.path_to_goal[1:-1]:
-                # check distance between n and random node
-                dist = random_node.euclidean_dist(n)
-                max_dist = max(distances)
+            for path_node in path:
+                # check distance between path_node and random node
+                dist = random_node.euclidean_dist(path_node)
+                max_dist = max(distances)                   # get the current largest distances in the distances list
 
                 if dist < max_dist:
                     index_of_max_distance = distances.index(max_dist)
-                    distances[index_of_max_distance] = dist     # replace max dist with current distance
-                    nodes[index_of_max_distance] = n            # replace existing node with current node
+                    distances[index_of_max_distance] = dist     # replace current largest distance with new distance
+                    nodes[index_of_max_distance] = path_node    # replace corresponding node with new node
+
+            # The nodes list now holds the n closest path nodes to our random sample. These are the random samples neighbours.
+            # The distances list holds the corresponding n smallest distances.
 
             # Step 3: for each neighbour, if the cost to the neighbour's parent is less through the 
             # random sample than it currently is, rewire the path.
@@ -80,6 +88,13 @@ class RRTStar(RRT):
                 if new_child_cost < original_child_cost:
                     cost_differences[index_of_neighbour] = original_child_cost - new_child_cost
 
+            # find the samllest cost_difference and get corresponding neighbour
+            smallest_diff = min(cost_differences)
+            idx = cost_differences.index(smallest_diff)
+            best_neighbour = nodes.index(idx)
+
+
+            # Step 5: Create new path
                 
 
 
