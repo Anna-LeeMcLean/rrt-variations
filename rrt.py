@@ -40,7 +40,7 @@ class RRT():
             print("adding to tree")
             new_node = self._add_node_to_tree(new_sample, nearest_neighbour)
             plt.plot(new_node.x, new_node.y, "bo", linewidth=0.5)
-            self._connect_to_parent(new_node)
+            self._connect_to_parent(new_node, 'gray')
             at_goal = self._check_if_at_goal(new_node)
 
             if at_goal:
@@ -94,11 +94,11 @@ class RRT():
 
         return new_node
     
-    def _connect_to_parent(self, new_node: Node) -> None:
+    def _connect_to_parent(self, new_node: Node, linecolour: str) -> None:
 
         x = [new_node.parent.x, new_node.x]
         y = [new_node.parent.y, new_node.y]
-        plt.plot(x, y, 'gray', linestyle='--')
+        plt.plot(x, y, linecolour, linestyle='--')
     
     def _check_if_at_goal(self, new_node: Node) -> bool:
         # TODO: can make the process faster if you don't do this after every sample created. 
@@ -108,7 +108,7 @@ class RRT():
             # add goal node to tree
             self.tree.append(self.goal)
             self._update_node_attributes(self.goal, new_node)
-            self._connect_to_parent(self.goal)
+            self._connect_to_parent(self.goal, 'gray')
             self._success = True
             print("Found path to goal!")
 
@@ -130,12 +130,12 @@ class RRT():
         plt.plot(path_x, path_y, 'yellow')
 
 
-start1 = Node(x=10.0, y=10.0)
-end1 = Node(x=100.0, y=100.0)
-rrt = RRT(start=start1, goal=end1)
-def func(frames):
-    rrt.create()
+# start1 = Node(x=10.0, y=10.0)
+# end1 = Node(x=100.0, y=100.0)
+# rrt = RRT(start=start1, goal=end1)
+# def func(frames):
+#     rrt.create()
 
-# initialize animation for visualization
-animation = FuncAnimation(plt.gcf(), func)
-plt.show()
+# # initialize animation for visualization
+# animation = FuncAnimation(plt.gcf(), func)
+# plt.show()
