@@ -2,17 +2,31 @@
 import copy
 import math
 import random
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 # Anna-Lee's imports
 from node import Node
 from rrt import RRT
 
-class RRTStar(RRT):
+class RRTStar():
 
-    def __init__(self, start: Node, goal: Node, step_size_mm: float = 20, neighbours: int = 5) -> None:
-        super().__init__(start, goal, step_size_mm)
+    _success: bool = False
+
+    def __init__(self, start: Node, goal: Node, step_size_mm: float = 20, neighbours: int = 3) -> None:
+        self.rrt = RRT(start, goal, step_size_mm)
 
         self.neighbours = neighbours
+        
+
+    def create(self):
+        if not self._success:
+            self.rrt.create()
+
+            if self.rrt._success:
+                print("rewiring")
+                self.rewire_path()
+                self._success = True
 
     def rewire_path(self):
         '''
@@ -30,26 +44,28 @@ class RRTStar(RRT):
            random sample than it currently is, rewire the path. 
         4. rewire the path
               - set the neighbours child and parent nodes to the sample's child and parent nodes
+        5. replace current node in path with random sample
 
-        5. remove previous two edges and redraw new edges to child/parent
+        6. remove previous two edges and redraw new edges to child/parent
 
         Number of samples to add = Number of nodes in path * 100?
         '''
 
-        number_of_nodes_to_add = len(self.path_to_goal) * 100
+        number_of_nodes_to_add = len(self.rrt.path_to_goal)
+        # number_of_nodes_to_add = 2
         count = 0
 
-        path = self.path_to_goal[1:-1]      # remove start and goal nodes from path
+        path = self.rrt.path_to_goal[1:-1]      # remove start and goal nodes from path
 
         while count != number_of_nodes_to_add:
             # Step 1: create a random sample in the workspace that is close to a node in the path
             node = random.choice(path)       # choose a random node in the path (excluding the start and goal nodes)
 
-            random_x = random.uniform(-self.step_size_mm, self.step_size_mm)
-            random_y = random.uniform(-self.step_size_mm, self.step_size_mm)
+            random_x = random.uniform(-self.rrt.step_size_mm, self.rrt.step_size_mm)
+            random_y = random.uniform(-self.rrt.step_size_mm, self.rrt.step_size_mm)
 
             random_node = Node(x=node.x + random_x, y=node.y + random_y)
-
+            plt.plot(random_node.x, random_node.y, "rx")
             # Step 2: get n closest neighbours to the random node
 
             # Initialize a list which will hold the n smallest distances between the random sample and neighbour nodes
@@ -73,7 +89,7 @@ class RRTStar(RRT):
             # Step 3: for each neighbour, if the cost to the neighbour's parent is less through the 
             # random sample than it currently is, rewire the path.
             random_nodes = [copy.copy(random_node) for _ in range(self.neighbours)]     # every neighbour has their own copy of the random node
-            cost_differences = [math.inf]*self.neighbours
+            cost_differences = [0.0]*self.neighbours
 
             for neighbour in nodes:
                 index_of_neighbour = nodes.index(neighbour)
@@ -88,14 +104,35 @@ class RRTStar(RRT):
                 if new_child_cost < original_child_cost:
                     cost_differences[index_of_neighbour] = original_child_cost - new_child_cost
 
-            # find the samllest cost_difference and get corresponding neighbour
-            smallest_diff = min(cost_differences)
-            idx = cost_differences.index(smallest_diff)
-            best_neighbour = nodes.index(idx)
+            # find the largest cost_difference and get corresponding neighbour
+            largest_diff = max(cost_differences)
+            idx = cost_differences.index(largest_diff)
+            best_random_node = random_nodes[idx]
 
-
-            # Step 5: Create new path
+            if largest_diff != 0.0:
+                # Step 5: replace neighbour with random sample.
+                best_random_node.child.parent = best_random_node
+                best_random_node.parent.child = best_random_node
+                best_random_node.child.cost = new_child_cost
                 
+                for path_node in path:
+                    if path_node == nodes[idx]:
+                        path_node_idx = path.index(path_node)
+                        path[path_node_idx] = nodes[idx]
+
+                # Step 6: Create new path
+                self.rrt._connect_to_parent(best_random_node, 'red')
+                self.rrt._connect_to_parent(best_random_node.child, 'red')
+
+            count+=1
 
 
-                    
+start1 = Node(x=10.0, y=10.0)
+end1 = Node(x=100.0, y=100.0)
+rrt_star = RRTStar(start=start1, goal=end1)
+def func(frames):
+    rrt_star.create()
+
+# initialize animation for visualization
+animation = FuncAnimation(plt.gcf(), func)
+plt.show()
