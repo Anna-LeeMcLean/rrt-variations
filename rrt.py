@@ -46,6 +46,14 @@ class RRT():
             if at_goal:
                 self._return_path()
                 print(f"Overall cost to goal: {self.goal.cost:.2f}!")
+
+    def visualize(self):
+        def func(frames):
+            self.create()
+
+        # initialize animation for visualization
+        animation = FuncAnimation(plt.gcf(), func)
+        plt.show()
     
     def _sample_space(self) -> Node:
         sample_x = random.uniform(0, self.workspace_length_mm)
@@ -133,6 +141,7 @@ class RRT():
 # start1 = Node(x=10.0, y=10.0)
 # end1 = Node(x=100.0, y=100.0)
 # rrt = RRT(start=start1, goal=end1)
+# rrt.visualize()
 # def func(frames):
 #     rrt.create()
 
