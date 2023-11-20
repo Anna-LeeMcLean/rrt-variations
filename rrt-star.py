@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 # Anna-Lee's imports
-from node import Node
+from node import Node, RewireNode
 from rrt import RRT
 
 class RRTStar():
@@ -59,70 +59,83 @@ class RRTStar():
 
         while count != number_of_nodes_to_add:
             # Step 1: create a random sample in the workspace that is close to a node in the path
-            node = random.choice(path)       # choose a random node in the path (excluding the start and goal nodes)
+            node = random.choice(path)       # choose a node in the path (excluding the start and goal nodes)
 
             random_x = random.uniform(-self.rrt.step_size_mm, self.rrt.step_size_mm)
             random_y = random.uniform(-self.rrt.step_size_mm, self.rrt.step_size_mm)
 
-            random_node = Node(x=node.x + random_x, y=node.y + random_y)
-            plt.plot(random_node.x, random_node.y, "rx")
+            rewire_node = RewireNode(x=node.x + random_x, y=node.y + random_y)
+            plt.plot(rewire_node.x, rewire_node.y, "rx")
             # Step 2: get n closest neighbours to the random node
 
             # Initialize a list which will hold the n smallest distances between the random sample and neighbour nodes
             distances = [math.inf for _ in range(self.neighbours)]   
             # Initalize a list which will hold the nearest neighbours   
-            nodes = [None for _ in range(self.neighbours)]
+            neighbour_nodes = [None for _ in range(self.neighbours)]
 
             for path_node in path:
                 # check distance between path_node and random node
-                dist = random_node.euclidean_dist(path_node)
+                dist = rewire_node.euclidean_dist(path_node)
                 max_dist = max(distances)                   # get the current largest distances in the distances list
 
                 if dist < max_dist:
                     index_of_max_distance = distances.index(max_dist)
                     distances[index_of_max_distance] = dist     # replace current largest distance with new distance
-                    nodes[index_of_max_distance] = path_node    # replace corresponding node with new node
+                    neighbour_nodes[index_of_max_distance] = path_node    # replace corresponding node with new node
 
             # The nodes list now holds the n closest path nodes to our random sample. These are the random samples neighbours.
             # The distances list holds the corresponding n smallest distances.
 
             # Step 3: for each neighbour, if the cost to the neighbour's parent is less through the 
             # random sample than it currently is, rewire the path.
-            random_nodes = [copy.copy(random_node) for _ in range(self.neighbours)]     # every neighbour has their own copy of the random node
-            cost_differences = [0.0]*self.neighbours
+            # random_nodes = [copy.copy(random_node) for _ in range(self.neighbours)]     # every neighbour has their own copy of the random node
+            # cost_differences = [0.0]*self.neighbours
+            largest_cost_difference = -math.inf
+            best_rewire_node = None
+            corresponding_neighbour_node = None
 
-            for neighbour in nodes:
-                index_of_neighbour = nodes.index(neighbour)
-                _node = random_nodes[index_of_neighbour]        # get copy of random sample at the same index as the neighboure node
+            for neighbour in neighbour_nodes:
+                rewire_node_copy = copy.copy(rewire_node)
+                # index_of_neighbour = nodes.index(neighbour)
+                # _node = random_nodes[index_of_neighbour]        # get copy of random sample at the same index as the neighboure node
                 original_child_cost = neighbour.child.cost
 
-                _node.parent = neighbour.parent
-                _node.child = neighbour.child
-                _node.cost = _node.parent.cost + _node.euclidean_dist(_node.parent)
-                new_child_cost = _node.cost + _node.euclidean_dist(_node.child)
+                rewire_node_copy.parent = neighbour.parent
+                rewire_node_copy.child = neighbour.child
+                rewire_node_copy.cost = rewire_node_copy.parent.cost + rewire_node_copy.euclidean_dist(rewire_node_copy.parent)
+                new_child_cost = rewire_node_copy.cost + rewire_node_copy.euclidean_dist(rewire_node_copy.child)
 
                 if new_child_cost < original_child_cost:
-                    cost_differences[index_of_neighbour] = original_child_cost - new_child_cost
+                    rewire_node_copy.cost_difference = original_child_cost - new_child_cost
+
+                    if rewire_node_copy.cost_difference > largest_cost_difference:     
+                        largest_cost_difference = rewire_node_copy.cost_difference
+                        best_rewire_node = rewire_node_copy
+                        corresponding_neighbour_node = neighbour
+
+                # if new_child_cost < original_child_cost:
+                #     cost_differences[index_of_neighbour] = original_child_cost - new_child_cost
 
             # find the largest cost_difference and get corresponding neighbour
-            largest_diff = max(cost_differences)
-            idx = cost_differences.index(largest_diff)
-            best_random_node = random_nodes[idx]
+            # largest_diff = max(cost_differences)
+            # idx = cost_differences.index(largest_diff)
+            # best_random_node = random_nodes[idx]
 
-            if largest_diff != 0.0:
+            if best_rewire_node is not None:
                 # Step 5: replace neighbour with random sample.
-                best_random_node.child.parent = best_random_node
-                best_random_node.parent.child = best_random_node
-                best_random_node.child.cost = new_child_cost
+                best_rewire_node.child.parent = best_rewire_node
+                best_rewire_node.parent.child = best_rewire_node
+                best_rewire_node.child.cost = new_child_cost
                 
                 for path_node in path:
-                    if path_node == nodes[idx]:
+                # if path_node == nodes[idx]:
+                    if path_node == corresponding_neighbour_node:
                         path_node_idx = path.index(path_node)
-                        path[path_node_idx] = nodes[idx]
+                        path[path_node_idx] = best_rewire_node
 
                 # Step 6: Create new path
-                self.rrt._connect_to_parent(best_random_node, 'red')
-                self.rrt._connect_to_parent(best_random_node.child, 'red')
+                self.rrt._connect_to_parent(best_rewire_node, 'red')
+                self.rrt._connect_to_parent(best_rewire_node.child, 'red')
 
             count+=1
 
