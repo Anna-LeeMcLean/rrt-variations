@@ -88,16 +88,12 @@ class RRTStar():
 
             # Step 3: for each neighbour, if the cost to the neighbour's parent is less through the 
             # random sample than it currently is, rewire the path.
-            # random_nodes = [copy.copy(random_node) for _ in range(self.neighbours)]     # every neighbour has their own copy of the random node
-            # cost_differences = [0.0]*self.neighbours
             largest_cost_difference = -math.inf
             best_rewire_node = None
             corresponding_neighbour_node = None
 
             for neighbour in neighbour_nodes:
                 rewire_node_copy = copy.copy(rewire_node)
-                # index_of_neighbour = nodes.index(neighbour)
-                # _node = random_nodes[index_of_neighbour]        # get copy of random sample at the same index as the neighboure node
                 original_child_cost = neighbour.child.cost
 
                 rewire_node_copy.parent = neighbour.parent
@@ -113,14 +109,6 @@ class RRTStar():
                         best_rewire_node = rewire_node_copy
                         corresponding_neighbour_node = neighbour
 
-                # if new_child_cost < original_child_cost:
-                #     cost_differences[index_of_neighbour] = original_child_cost - new_child_cost
-
-            # find the largest cost_difference and get corresponding neighbour
-            # largest_diff = max(cost_differences)
-            # idx = cost_differences.index(largest_diff)
-            # best_random_node = random_nodes[idx]
-
             if best_rewire_node is not None:
                 # Step 5: replace neighbour with random sample.
                 best_rewire_node.child.parent = best_rewire_node
@@ -128,7 +116,6 @@ class RRTStar():
                 best_rewire_node.child.cost = new_child_cost
                 
                 for path_node in path:
-                # if path_node == nodes[idx]:
                     if path_node == corresponding_neighbour_node:
                         path_node_idx = path.index(path_node)
                         path[path_node_idx] = best_rewire_node
