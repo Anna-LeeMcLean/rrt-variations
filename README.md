@@ -2,14 +2,10 @@
 
 TODO:
 
-1. Make NeghbourNode class that inherits from Node class. This class will store the distance to another node, the cost difference and the instance of the other node?
+1. Make visualize function for the rrt_star class.
 
-2. Make an edge attribute for the Node class. An edge is a line between the node and its parent. Only the start node doesn't have an edge.
+2. Make __eq__ function for the Node class (or just use a dataclass)
 
-3. Make animation a function of the class so I don't need to comment out code in the rrt.py file to run the rrt_star.py file.
+3. Doc strings for all methods
 
-4. Make __eq__ function for the Node class (or just use a dataclass)
-
-5. Doc strings for all methods
-
-6. Break up rewire method into saller methods.
+4. Break up rewire method into saller methods.
