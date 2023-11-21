@@ -5,13 +5,12 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 # Anna-Lee's imports
-from node import Node
+from node import Node, Path
 
 class RRT():
     start: Node
     goal: Node
     tree: list[Node] = []
-    path_to_goal: list[Node] = []
     step_size_mm: float
     goal_range: float
     workspace_length_mm : int = 500
@@ -22,12 +21,13 @@ class RRT():
         self.start = start
         self.goal = goal
         self.step_size_mm = step_size_mm
-        self.path_edges = None
 
         # add start node to tree
         self.tree.append(self.start)
+        # initialize path
+        self.path_to_goal = Path()
         # add goal node to the path returned
-        self.path_to_goal.append(self.goal)
+        self.path_to_goal.nodes.append(self.goal)
         plt.figure()
 
         # visulize start and end nodes
@@ -46,7 +46,7 @@ class RRT():
 
             if at_goal:
                 self._update_path()
-                self.plot_path()
+                self.path_to_goal.plot()
                 print(f"Overall cost to goal: {self.goal.cost:.2f}!")
 
     def visualize(self):
@@ -131,18 +131,8 @@ class RRT():
         current_node = self.goal
 
         while current_node.parent != None:
-            self.path_to_goal.append(current_node.parent)
+            self.path_to_goal.nodes.append(current_node.parent)
             current_node = current_node.parent
-
-    def plot_path(self):
-        path_x = [node.x for node in self.path_to_goal]
-        path_y = [node.y for node in self.path_to_goal]
-
-        if self.path_edges != None:
-            l = self.path_edges.pop(0)
-            l.remove()
-
-        self.path_edges = plt.plot(path_x, path_y, 'yellow')
 
 
 # start1 = Node(x=10.0, y=10.0)
