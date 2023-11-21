@@ -51,13 +51,13 @@ class RRTStar():
         Number of samples to add = Number of nodes in path * 100?
         '''
 
-        number_of_nodes_to_add = len(self.rrt.path_to_goal)
-        # number_of_nodes_to_add = 2
+        number_of_nodes_to_add = len(self.rrt.path_to_goal)*10
         count = 0
 
-        path = self.rrt.path_to_goal[1:-1]      # remove start and goal nodes from path
-
         while count != number_of_nodes_to_add:
+
+            path = self.rrt.path_to_goal[1:-1]      # remove start and goal nodes from path
+
             # Step 1: create a random sample in the workspace that is close to a node in the path
             node = random.choice(path)       # choose a node in the path (excluding the start and goal nodes)
 
@@ -114,15 +114,16 @@ class RRTStar():
                 best_rewire_node.child.parent = best_rewire_node
                 best_rewire_node.parent.child = best_rewire_node
                 best_rewire_node.child.cost = new_child_cost
-                
-                for path_node in path:
+                rrt_path = self.rrt.path_to_goal
+
+                for path_node in rrt_path:
                     if path_node == corresponding_neighbour_node:
-                        path_node_idx = path.index(path_node)
-                        path[path_node_idx] = best_rewire_node
+                        path_node_idx = rrt_path.index(path_node)
+                        rrt_path[path_node_idx] = best_rewire_node
+                        break
 
                 # Step 6: Create new path
-                self.rrt._connect_to_parent(best_rewire_node, 'red')
-                self.rrt._connect_to_parent(best_rewire_node.child, 'red')
+                self.rrt.plot_path()
 
             count+=1
 

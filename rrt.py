@@ -22,6 +22,7 @@ class RRT():
         self.start = start
         self.goal = goal
         self.step_size_mm = step_size_mm
+        self.path_edges = None
 
         # add start node to tree
         self.tree.append(self.start)
@@ -44,7 +45,8 @@ class RRT():
             at_goal = self._check_if_at_goal(new_node)
 
             if at_goal:
-                self._return_path()
+                self._update_path()
+                self.plot_path()
                 print(f"Overall cost to goal: {self.goal.cost:.2f}!")
 
     def visualize(self):
@@ -124,7 +126,7 @@ class RRT():
         
         return False
     
-    def _return_path(self):
+    def _update_path(self):
 
         current_node = self.goal
 
@@ -132,10 +134,15 @@ class RRT():
             self.path_to_goal.append(current_node.parent)
             current_node = current_node.parent
 
+    def plot_path(self):
         path_x = [node.x for node in self.path_to_goal]
         path_y = [node.y for node in self.path_to_goal]
 
-        plt.plot(path_x, path_y, 'yellow')
+        if self.path_edges != None:
+            l = self.path_edges.pop(0)
+            l.remove()
+
+        self.path_edges = plt.plot(path_x, path_y, 'yellow')
 
 
 # start1 = Node(x=10.0, y=10.0)
