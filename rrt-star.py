@@ -68,38 +68,19 @@ class RRTStar():
             
             # Step 3: for each neighbour, if the cost to the neighbour's parent is less through the 
             # random sample than it currently is, rewire the path.
-            largest_cost_difference = -math.inf
-            best_rewire_node = None
-            corresponding_neighbour_node = None
+            updated_rewire_node, best_neighbour_option, new_child_cost = self.find_best_rewire_option(neighbour_nodes, rewire_node)
 
-            for neighbour in neighbour_nodes:
-                rewire_node_copy = copy.copy(rewire_node)
-                original_child_cost = neighbour.child.cost
-
-                rewire_node_copy.parent = neighbour.parent
-                rewire_node_copy.child = neighbour.child
-                rewire_node_copy.cost = rewire_node_copy.parent.cost + rewire_node_copy.euclidean_dist(rewire_node_copy.parent)
-                new_child_cost = rewire_node_copy.cost + rewire_node_copy.euclidean_dist(rewire_node_copy.child)
-
-                if new_child_cost < original_child_cost:
-                    rewire_node_copy.cost_difference = original_child_cost - new_child_cost
-
-                    if rewire_node_copy.cost_difference > largest_cost_difference:     
-                        largest_cost_difference = rewire_node_copy.cost_difference
-                        best_rewire_node = rewire_node_copy
-                        corresponding_neighbour_node = neighbour
-
-            if best_rewire_node is not None:
+            if updated_rewire_node is not None:
                 # Step 5: replace neighbour with random sample.
-                best_rewire_node.child.parent = best_rewire_node
-                best_rewire_node.parent.child = best_rewire_node
-                best_rewire_node.child.cost = new_child_cost
+                updated_rewire_node.child.parent = updated_rewire_node
+                updated_rewire_node.parent.child = updated_rewire_node
+                self.update_child_costs(updated_rewire_node, new_child_cost)
                 rrt_path = self.rrt.path_to_goal.nodes
 
                 for path_node in rrt_path:
-                    if path_node == corresponding_neighbour_node:
+                    if path_node == best_neighbour_option:
                         path_node_idx = rrt_path.index(path_node)
-                        rrt_path[path_node_idx] = best_rewire_node
+                        rrt_path[path_node_idx] = updated_rewire_node
                         break
 
                 # Step 6: Create new path
@@ -138,11 +119,48 @@ class RRTStar():
         # The distances list holds the corresponding n smallest distances.
         
         return neighbour_nodes
+    
+    def find_best_rewire_option(self, neighbour_nodes: list[Node], rewire_node):
+        largest_cost_difference = -math.inf
+        best_rewire_node = None
+        corresponding_neighbour_node = None
+
+        for neighbour in neighbour_nodes:
+            rewire_node_copy = copy.copy(rewire_node)
+            original_child_cost = neighbour.child.cost
+
+            rewire_node_copy.parent = neighbour.parent
+            rewire_node_copy.child = neighbour.child
+            rewire_node_copy_cost = rewire_node_copy.parent.cost + rewire_node_copy.euclidean_dist(rewire_node_copy.parent)
+            rewire_node_copy.cost = rewire_node_copy_cost
+            new_child_cost = rewire_node_copy.cost + rewire_node_copy.euclidean_dist(rewire_node_copy.child)
+
+            if new_child_cost < original_child_cost:
+                rewire_node_copy.cost_difference = original_child_cost - new_child_cost
+
+                if rewire_node_copy.cost_difference > largest_cost_difference:     
+                    largest_cost_difference = rewire_node_copy.cost_difference
+                    best_rewire_node = rewire_node_copy
+                    corresponding_neighbour_node = neighbour
+
+        return best_rewire_node, corresponding_neighbour_node, new_child_cost
+    
+    def update_child_costs(self, rewire_node: Node, new_child_cost: float) -> None:
+
+        current_child = rewire_node.child
+
+        while True:
+            current_child.cost = new_child_cost
+            if current_child.child != None:
+                new_child_cost += current_child.euclidean_dist(current_child.child)
+                current_child = current_child.child
+            else:
+                break
 
 
 start1 = Node(x=10.0, y=10.0)
 end1 = Node(x=100.0, y=100.0)
-rrt_star = RRTStar(start=start1, goal=end1)
+rrt_star = RRTStar(start=start1, goal=end1, neighbours=4, number_of_added_nodes=200)
 def func(frames):
     rrt_star.create()
 
