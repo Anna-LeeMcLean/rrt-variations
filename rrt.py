@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 # Anna-Lee's imports
-from node import Node, Path
+from utils.node import Node
+from utils.path import Path
 
 class RRT():
     start: Node

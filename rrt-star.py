@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 # Anna-Lee's imports
-from node import Node, RewireNode
+from utils.node import Node, RewireNode
 from rrt import RRT
 
 class RRTStar():
