@@ -34,6 +34,10 @@ class RRT():
         plt.plot(self.start.x, self.start.y, "go")
         plt.plot(self.goal.x, self.goal.y, "ro")
 
+    @property
+    def success(self):
+        return self._success
+
     def create(self):
         if not self._success:
             new_sample = self._sample_space()
@@ -139,9 +143,3 @@ class RRT():
 # end1 = Node(x=100.0, y=100.0)
 # rrt = RRT(start=start1, goal=end1)
 # rrt.visualize()
-# def func(frames):
-#     rrt.create()
-
-# # initialize animation for visualization
-# animation = FuncAnimation(plt.gcf(), func)
-# plt.show()

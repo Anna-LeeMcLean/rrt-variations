@@ -26,10 +26,18 @@ class RRTStar():
         if not self._success:
             self.rrt.create()
 
-            if self.rrt._success:
+            if self.rrt.success:
                 print("rewiring")
                 self.rewire_path()
                 self._success = True
+
+    def visualize(self):
+        def func(frames):
+            self.create()
+
+        # initialize animation for visualization
+        animation = FuncAnimation(plt.gcf(), func)
+        plt.show()
 
     def rewire_path(self):
         '''
@@ -161,9 +169,4 @@ class RRTStar():
 start1 = Node(x=10.0, y=10.0)
 end1 = Node(x=100.0, y=100.0)
 rrt_star = RRTStar(start=start1, goal=end1, neighbours=4, number_of_added_nodes=200)
-def func(frames):
-    rrt_star.create()
-
-# initialize animation for visualization
-animation = FuncAnimation(plt.gcf(), func)
-plt.show()
+rrt_star.visualize()
