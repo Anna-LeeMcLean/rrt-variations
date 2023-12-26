@@ -9,29 +9,26 @@ from utils.node import Node
 from utils.path import Path
 
 class RRT():
-    start: Node
-    goal: Node
-    tree: list[Node] = []
-    step_size_mm: float
-    goal_range: float
+
     workspace_length_mm : int = 500
     workspace_height_mm : int = 500
-    _success: bool = False
-
+    
     def __init__(self, start:Node, goal:Node, step_size_mm: float = 20.0) -> None:
         self.start = start
         self.goal = goal
         self.step_size_mm = step_size_mm
 
         # add start node to tree
-        self.tree.append(self.start)
+        self.tree: Node = [self.start]
         # initialize path
         self.path_to_goal = Path()
         # add goal node to the path returned
-        self.path_to_goal.nodes.append(self.goal)
-        plt.figure()
+        self.path_to_goal.add_node(self.goal)
+        # initialize success to False
+        self._success: bool = False
 
         # visulize start and end nodes
+        plt.figure()
         plt.plot(self.start.x, self.start.y, "go")
         plt.plot(self.goal.x, self.goal.y, "ro")
 
@@ -136,7 +133,7 @@ class RRT():
         current_node = self.goal
 
         while current_node.parent != None:
-            self.path_to_goal.nodes.append(current_node.parent)
+            self.path_to_goal.add_node(current_node.parent)
             current_node = current_node.parent
 
 

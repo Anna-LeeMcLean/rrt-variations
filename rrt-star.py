@@ -11,12 +11,12 @@ from rrt import RRT
 
 class RRTStar():
 
-    _success: bool = False
-
     def __init__(self, start: Node, goal: Node, step_size_mm: float = 20, 
-                 neighbours: int = 3, number_of_added_nodes = 50) -> None:
+                 neighbours: int = 3, number_of_added_nodes: int= 50) -> None:
         
         self.rrt = RRT(start, goal, step_size_mm)
+
+        self._success: bool = False
 
         self.neighbours = neighbours
         self.number_of_added_nodes = number_of_added_nodes
