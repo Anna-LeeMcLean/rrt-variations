@@ -18,4 +18,5 @@ class Path():
             l = self.line.pop(0)
             l.remove()
 
-        self.line = plt.plot(path_x, path_y, 'yellow')
+        self.line = plt.plot(path_x, path_y, 'yellow', label='rewired path')
+        plt.legend()
